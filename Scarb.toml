@@ -1,0 +1,15 @@
+[package]
+name = "factory_token"
+version = "0.1.0"
+
+# See more keys and their definitions at https://docs.swmansion.com/scarb/docs/reference/manifest
+
+[[target.starknet-contract]]
+sierra = true
+allowed-libfuncs-list.name = "experimental"
+
+[dependencies]
+starknet = "2.2.0"
+
+[tool.snforge]
+# exit_first = true
