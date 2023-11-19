@@ -21,6 +21,15 @@ trait IERC20<TContractState> {
     fn decreaseAllowance(
         ref self: TContractState, spender: ContractAddress, subtracted_value: u256
     ) -> bool;
+    fn get_factory(self: @TContractState) -> ContractAddress;
+    fn initialize(
+        ref self: TContractState,
+        name: felt252,
+        symbol: felt252,
+        decimals: u8,
+        initial_supply: u256,
+        recipient: ContractAddress
+    );
 }
 
 #[starknet::contract]
@@ -32,6 +41,7 @@ mod ERC20 {
 
     #[storage]
     struct Storage {
+        factory: ContractAddress,
         name: felt252,
         symbol: felt252,
         decimals: u8,
@@ -59,52 +69,10 @@ mod ERC20 {
         value: u256,
     }
 
-    // #[constructor]
-    // fn constructor(
-    //     ref self: ContractState,
-    //     name_: felt252,
-    //     symbol_: felt252,
-    //     decimals_: u8,
-    //     initial_supply: u256,
-    //     recipient: ContractAddress
-    // ) {
-    //     self.name.write(name_);
-    //     self.symbol.write(symbol_);
-    //     self.decimals.write(decimals_);
-    //     assert(!recipient.is_zero(), 'mint to the 0 address');
-    //     self.total_supply.write(initial_supply);
-    //     self.balances.write(recipient, initial_supply);
-    //     self
-    //         .emit(
-    //             Event::Transfer(
-    //                 Transfer {
-    //                     from: contract_address_const::<0>(), to: recipient, value: initial_supply
-    //                 }
-    //             )
-    //         );
-    // }
     #[constructor]
-    fn constructor(ref self: ContractState, // name_: felt252,
-    // symbol_: felt252,
-    // decimals_: u8,
-    // initial_supply: u256,
-    // recipient: ContractAddress
-    ) { // self.name.write(name_);
-    // self.symbol.write(symbol_);
-    // self.decimals.write(decimals_);
-    // assert(!recipient.is_zero(), 'mint to the 0 address');
-    // self.total_supply.write(initial_supply);
-    // self.balances.write(recipient, initial_supply);
-    // self
-    //     .emit(
-    //         Event::Transfer(
-    //             Transfer {
-    //                 from: contract_address_const::<0>(), to: recipient, value: initial_supply
-    //             }
-    //         )
-    //     );
+    fn constructor(ref self: ContractState,) {
+        self.factory.write(get_caller_address());
     }
-
 
     #[external(v0)]
     impl ERC20Impl of super::IERC20<ContractState> {
@@ -174,6 +142,35 @@ mod ERC20 {
                     caller, spender, self.allowances.read((caller, spender)) - subtracted_value
                 );
             true
+        }
+        fn get_factory(self: @ContractState) -> ContractAddress {
+            self.factory.read()
+        }
+
+        fn initialize(
+            ref self: ContractState,
+            name: felt252,
+            symbol: felt252,
+            decimals: u8,
+            initial_supply: u256,
+            recipient: ContractAddress
+        ) {
+            assert(get_caller_address() == self.factory.read(), 'Should be called from factory');
+            self.name.write(name);
+            self.symbol.write(symbol);
+            self.decimals.write(decimals);
+            self.total_supply.write(initial_supply);
+            self.balances.write(recipient, initial_supply);
+            self
+                .emit(
+                    Event::Transfer(
+                        Transfer {
+                            from: contract_address_const::<0>(),
+                            to: recipient,
+                            value: initial_supply
+                        }
+                    )
+                );
         }
     }
 
