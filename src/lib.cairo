@@ -1,5 +1,5 @@
 mod contract;
 mod erc20;
-mod utils;
+mod error;
 #[cfg(test)]
 mod tests;
