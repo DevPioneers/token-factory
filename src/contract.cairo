@@ -18,6 +18,7 @@ trait IFactory<TContractState> {
     fn get_fee_amount(self: @TContractState) -> u256;
     fn set_fee_token(ref self: TContractState, fee_token: ContractAddress);
     fn set_fee_amount(ref self: TContractState, fee_amount: u256);
+    fn set_fee_receiver(ref self: TContractState, fee_receiver: ContractAddress);
 }
 
 #[starknet::contract]
@@ -41,6 +42,7 @@ mod Factory {
         token_length: u256,
         fee_token: ContractAddress,
         fee_amount: u256,
+        fee_receiver: ContractAddress,
         token_by_index: LegacyMap::<u256, ContractAddress>,
     }
     #[event]
@@ -74,6 +76,7 @@ mod Factory {
     ) {
         self.token_class_hash.write(token_contract_class_hash);
         self.owner.write(owner);
+        self.fee_receiver.write(owner);
         self.fee_token.write(fee_token);
         self.fee_amount.write(fee_amount);
         self.token_length.write(0);
@@ -139,6 +142,11 @@ mod Factory {
             self.only_owner();
             self.fee_token.write(fee_token);
         }
+        fn set_fee_receiver(ref self: ContractState, fee_receiver: ContractAddress) {
+            self.only_owner();
+            self.fee_receiver.write(fee_receiver);
+        }
+
         fn set_fee_amount(ref self: ContractState, fee_amount: u256) {
             self.only_owner();
             self.fee_amount.write(fee_amount);
