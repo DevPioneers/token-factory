@@ -33,7 +33,9 @@ mod Factory {
     use starknet::syscalls::deploy_syscall;
     use traits::Into;
     use zeroable::Zeroable;
-    use factory_token::erc20::{IERC20Dispatcher, IERC20DispatcherTrait};
+    use factory_token::openzeppelin_erc20::{IERC20Dispatcher, IERC20DispatcherTrait};
+
+    // use factory_token::erc20::{IERC20Dispatcher, IERC20DispatcherTrait};
     use factory_token::error::Error;
     #[storage]
     struct Storage {
